@@ -1,0 +1,63 @@
+services:
+  timebase:
+    image: finos/timebase-ce-server:${TIMEBASE_VERSION}
+    stop_grace_period: 5m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      - JAVA_OPTS=
+        -DTimeBase.version=5.0
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/timebase-home/timebase.hprof
+        -DTimeBase.metrics.enable=true
+        -DTimeBase.metrics.gatherJvmMetrics=true
+        -Xlog:gc=debug:file=/timebase-home/GClog-TimeBase.log:time,uptime,level,tags:filecount=5,filesize=100m
+    volumes:
+      - timebase-home:/timebase-home
+    ports:
+      - ${TIMEBASE_PORT}:8011
+    healthcheck:
+      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:8011/tb/ping"]
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 10G
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - timebase
+
+  timebase-admin:
+    image: "epam/timebase-ws-server:${TIMEBASE_ADMIN_VERSION}"
+    restart: unless-stopped
+    environment:
+      - JAVA_OPTS=
+        -Dserver.port=8099
+        -Dtimebase.url=dxtick://timebase:8011
+        -Dserver.compression.enabled=true
+        -Dserver.compression.mime-types=text/html,text/css,application/javascript,application/json
+    ports:
+      - ${TIMEBASE_ADMIN_PORT}:8099
+    depends_on:
+      - timebase
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2G
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - timebase
+
+volumes:
+  timebase-home: {}
+
+networks:
+  timebase:
