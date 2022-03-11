@@ -34,7 +34,7 @@ services:
       - timebase
 
   timebase-admin:
-    image: "epam/timebase-ws-server:${TIMEBASE_ADMIN_VERSION}"
+    image: epam/timebase-ws-server:${TIMEBASE_ADMIN_VERSION}
     restart: unless-stopped
     environment:
       - JAVA_OPTS=
@@ -51,6 +51,27 @@ services:
         limits:
           cpus: '0.5'
           memory: 2G
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - timebase
+
+  purge-streams:
+    image: finos/timebase-ce-client:${TIMEBASE_VERSION}
+    entrypoint: '/timebase-client/bin/purge.sh'
+    restart: unless-stopped
+    depends_on:
+      - timebase
+    environment:
+      - PURGE_TIMEBASE_URL=dxtick://timebase:8011
+      - PURGE_DAYS_TO_KEEP=${PURGE_DAYS_TO_KEEP}
+      - PURGE_EXCEPT_STREAMS=${PURGE_EXCEPT_STREAMS}
+      - PURGE_SLEEP=1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 230M
     security_opt:
       - no-new-privileges:true
     networks:
