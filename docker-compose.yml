@@ -45,7 +45,8 @@ services:
     ports:
       - ${TIMEBASE_ADMIN_PORT}:8099
     depends_on:
-      - timebase
+      - timebase:
+          condition: service_healthy
     deploy:
       resources:
         limits:
@@ -61,7 +62,8 @@ services:
     entrypoint: '/timebase-client/bin/purge.sh'
     restart: unless-stopped
     depends_on:
-      - timebase
+      - timebase:
+          condition: service_healthy
     environment:
       - PURGE_TIMEBASE_URL=dxtick://timebase:8011
       - PURGE_DAYS_TO_KEEP=${PURGE_DAYS_TO_KEEP}
