@@ -66,7 +66,7 @@ services:
       - PURGE_TIMEBASE_URL=dxtick://timebase:8011
       - PURGE_DAYS_TO_KEEP=${PURGE_DAYS_TO_KEEP}
       - PURGE_EXCEPT_STREAMS=${PURGE_EXCEPT_STREAMS}
-      - PURGE_SLEEP=1
+      - PURGE_SLEEP=${PURGE_HOURS_DELEY}
     deploy:
       resources:
         limits:
