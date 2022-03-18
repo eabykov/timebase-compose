@@ -77,6 +77,34 @@ services:
     networks:
       - timebase
 
+  aggregator:
+    image: finos/aggregator-ce:${TIMEBASE_VERSION}
+    restart: unless-stopped
+    depends_on:
+      - timebase
+    healthcheck:
+      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:1299"]
+    environment:
+      - AGGREGATOR_HOME=/aggregator-home/config/aggregator
+      - JAVA_OPTS=
+        -DTimeBase.version=5.0
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/aggregator-home/aggregator.hprof
+        -Xlog:gc=debug:file=/aggregator-home/GClog-Aggregator.log:time,uptime,level,tags:filecount=5,filesize=100m
+    ports:
+      - ${AGGREGATOR_PORT}:1299
+    volumes:
+      - "./aggregator/admin.properties:/aggregator-home/config/admin.properties:ro"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 5000M
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - timebase
+
 volumes:
   timebase-home: {}
 
